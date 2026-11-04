@@ -1,0 +1,5 @@
+.venv
+.cache
+.vscode
+build
+SSD
