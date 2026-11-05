@@ -53,7 +53,7 @@ private:
   bool _running = true;
 
 public:
-  void stop() { _running = false; }
+  virtual void stop() { _running = false; }
   bool is_running() { return _running; }
 
   virtual std::thread start() = 0;

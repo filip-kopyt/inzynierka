@@ -11,14 +11,14 @@
 #define GPIO_PWM_LINE_OFFSET 110
 
 // Camera Parameters
-#define CAM_FPS 24
+// #define CAM_FPS 24
 #define CAM_TARGET_BRIGHTNESS 100
 #define CAM_WIDTH 1600
 #define CAM_HEIGHT 1300
 #define CAM_BUF_SIZE (CAM_WIDTH * CAM_HEIGHT)
 
 // Stop criteria
-#define MAX_FRAMES 120
+// #define MAX_FRAMES 240
 
 // Frame sync
-#define MAX_FRAME_TIMESTAMP_DIFF_NS 20'000'000
+// #define MAX_FRAME_TIMESTAMP_DIFF_NS 20'000'000

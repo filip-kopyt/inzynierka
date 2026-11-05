@@ -1,7 +1,7 @@
-#include "stereo_camera.h"
 #include "camera_rectify.h"
 #include "exposure_regulator.h"
-#include "frame_sync.h"
+#include "stereo_camera.h"
+//#include "frame_sync.h"
 #include "frame_writer.h"
 #include "video_display.h"
 #include <opencv2/core/base.hpp>
@@ -15,6 +15,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/stereo.hpp>
+#include <signal.h>
 
 // void cuda_test() {
 //   cv::cuda::Stream stream;
@@ -35,20 +36,24 @@
 //   file["R"] >> R;
 //   file["T"] >> T;
 
-//   cv::stereoRectify(K1, D1, K2, D2, cv::Size(CAM_WIDTH, CAM_HEIGHT), R, T, R1,
+//   cv::stereoRectify(K1, D1, K2, D2, cv::Size(CAM_WIDTH, CAM_HEIGHT), R, T,
+//   R1,
 //                     R2, P1, P2, Q, cv::STEREO_ZERO_DISPARITY, 0);
 
-//   cv::initUndistortRectifyMap(K1, D1, R1, P1, cv::Size(CAM_WIDTH, CAM_HEIGHT),
+//   cv::initUndistortRectifyMap(K1, D1, R1, P1, cv::Size(CAM_WIDTH,
+//   CAM_HEIGHT),
 //                               CV_32FC1, map1x, map1y);
-//   cv::initUndistortRectifyMap(K2, D2, R2, P2, cv::Size(CAM_WIDTH, CAM_HEIGHT),
+//   cv::initUndistortRectifyMap(K2, D2, R2, P2, cv::Size(CAM_WIDTH,
+//   CAM_HEIGHT),
 //                               CV_32FC1, map2x, map2y);
 
 //   map1x_g.upload(map1x, stream);
 //   map1y_g.upload(map1y, stream);
 //   map2x_g.upload(map2x, stream);
 //   map2y_g.upload(map2y, stream);
-//   frameL.upload(cv::imread("../left/frame0.png", cv::IMREAD_GRAYSCALE), stream);
-//   frameR.upload(cv::imread("../right/frame0.png", cv::IMREAD_GRAYSCALE),
+//   frameL.upload(cv::imread("../left/frame0.png", cv::IMREAD_GRAYSCALE),
+//   stream); frameR.upload(cv::imread("../right/frame0.png",
+//   cv::IMREAD_GRAYSCALE),
 //                 stream);
 
 //   auto matcher = cv::cuda::createStereoConstantSpaceBP(256);
@@ -68,7 +73,8 @@
 //     // filter->apply(disp, frameL_r, disp_filtered, stream);
 //     disp_filtered = std::move(disp);
 
-//     cv::cuda::normalize(disp_filtered, disp_normalized, 0, 255, cv::NORM_MINMAX,
+//     cv::cuda::normalize(disp_filtered, disp_normalized, 0, 255,
+//     cv::NORM_MINMAX,
 //                         CV_8UC1, cv::noArray(), stream);
 //     stream.waitForCompletion();
 //   }
@@ -76,6 +82,33 @@
 //   disp_normalized.download(disp_cpu);
 //   cv::imwrite("test_disp.png", disp_cpu);
 // }
+
+static bool running = true;
+
+void signal_handler(int signal) {
+  std::cout << "stopping\n";
+  running = false;
+}
+
+void run(std::vector<PipelineElementBase *> parts) {
+  std::vector<std::thread> threads;
+  signal(SIGINT, &signal_handler);
+
+  for (const auto v : parts) {
+    threads.push_back(v->start());
+  }
+
+  while (running)
+    std::this_thread::yield();
+
+  for (const auto v : parts) {
+    v->stop();
+  }
+
+  for (auto &t : threads) {
+    t.join();
+  }
+}
 
 int main(int argc, char *argv[]) {
   // cuda_test();
@@ -97,22 +130,10 @@ int main(int argc, char *argv[]) {
   auto exposure_regulator =
       ExposureRegulator(tee.out2(), cams, 0.15, 0.05, 0.20);
 
-  std::vector<PipelineElementBase *> objs = {
-      &cams, &tee, &exposure_regulator,
-  };
-
-  std::vector<std::thread> threads;
-  for (const auto v : objs) {
-    threads.push_back(v->start());
-  }
-
-  consumer.start().join();
-
-  for (const auto v : objs) {
-    v->stop();
-  }
-
-  for (auto &t : threads) {
-    t.join();
-  }
+  run({
+      &cams,
+      &tee,
+      &exposure_regulator,
+      &consumer,
+  });
 }

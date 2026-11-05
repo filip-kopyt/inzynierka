@@ -25,14 +25,15 @@ private:
   CameraMeta left, right;
 
   gpiod::chip _gpio_chip{"/dev/gpiochip0"};
-  gpiod::line_request _gpio_line;
+  gpiod::line _gpio_line;
 
   void disable_pwm();
   void enable_pwm();
 
 public:
   StereoCamera();
-
   void update_exposure(int value);
+
+  virtual void stop() override;
   virtual std::pair<cv::Mat, cv::Mat> work() override;
 };

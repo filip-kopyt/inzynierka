@@ -133,21 +133,30 @@ init_camera(int camera_index) {
   return {fd, buf_ptr};
 }
 
-static inline gpiod::line_request setup_gpio(gpiod::chip &chip) {
-  auto settings =
-      gpiod::line_settings().set_direction(gpiod::line::direction::OUTPUT);
-  auto config = gpiod::line_config();
-  config.add_line_settings(GPIO_PWM_LINE_OFFSET, settings);
-
-  return chip.prepare_request().set_line_config(config).do_request();
+static inline gpiod::line setup_gpio(gpiod::chip &chip) {
+  auto line = chip.get_line(GPIO_PWM_LINE_OFFSET);
+  gpiod::line_request config;
+  config.consumer = "StereoDisparityReader";
+  config.request_type = gpiod::line_request::DIRECTION_OUTPUT;
+  line.request(config, 0);
+  return line;
 }
 
 void StereoCamera::enable_pwm() {
-  _gpio_line.set_value(GPIO_PWM_LINE_OFFSET, gpiod::line::value::ACTIVE);
+  _gpio_line.set_value(1);
 }
 
 void StereoCamera::disable_pwm() {
-  _gpio_line.set_value(GPIO_PWM_LINE_OFFSET, gpiod::line::value::INACTIVE);
+  _gpio_line.set_value(0);
+}
+
+void StereoCamera::stop() {
+  left.running = false;
+  right.running = false;
+  PipelineElementBase::stop();
+
+  left.collection_thread.join();
+  right.collection_thread.join();
 }
 
 void StereoCamera::CameraMeta::loop() {
