@@ -4,21 +4,21 @@
 #include <opencv2/core.hpp>
 #include <utility>
 
-#include "camera_producer.h"
 #include "config.h"
+#include "stereo_camera.h"
 
-class ExposureRegulator : public PipelineElement<std::pair<cv::Mat, cv::Mat>, void> {
+class ExposureRegulator
+    : public PipelineElement<std::pair<cv::Mat, cv::Mat>, void> {
 private:
   MiniPID _pid;
-  CameraProducer &_cam1, &_cam2;
+  StereoCamera &_cams;
 
   double _exposure = 400;
 
 public:
   ExposureRegulator(Slot<std::pair<cv::Mat, cv::Mat>> &input,
-                    CameraProducer &cam1, CameraProducer &cam2, double p,
-                    double i, double d)
-      : _cam1(cam1), _cam2(cam2), _pid(p, i, d), PipelineElement(input) {
+                    StereoCamera &cams, double p, double i, double d)
+      : _cams(cams), _pid(p, i, d), PipelineElement(input) {
     _pid.setOutputLimits(-25, 25);
     _pid.setSetpointRange(50);
     _pid.setOutputFilter(0.1);
@@ -39,8 +39,7 @@ public:
     _exposure += _pid.getOutput(actual);
     _exposure = std::clamp(_exposure, 1.0, 800.0);
 
-    _cam1.update_exposure(_exposure);
-    _cam2.update_exposure(_exposure);
+    _cams.update_exposure(_exposure);
   }
 
   int to_pidspace(int color) { return color * 800 / 256; }

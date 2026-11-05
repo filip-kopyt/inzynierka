@@ -5,6 +5,7 @@
 #include <condition_variable>
 #include <cstdint>
 #include <cstdlib>
+#include <fcntl.h>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -13,6 +14,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <queue>
 #include <ratio>
+#include <unistd.h>
 #include <utility>
 #include <numeric>
 #include <filesystem>
@@ -80,13 +82,10 @@ public:
       cv::imencode(".png", merged_frames, png_buf, {cv::IMWRITE_PNG_COMPRESSION, 1});
       std::chrono::duration<double, std::milli> encoding_duration = std::chrono::high_resolution_clock::now() - start;
 
-      auto file = std::fstream(file_name, std::fstream::out | std::fstream::binary);
-      file.exceptions(std::fstream::badbit | std::fstream::failbit);
+      auto file = open(file_name.c_str(), O_WRONLY | O_SYNC | O_CREAT | O_DIRECT);
 
       start = std::chrono::high_resolution_clock::now();
-      file.write(reinterpret_cast<char*>(png_buf.data()), png_buf.size());
-      file.flush();
-      file.close();
+      write(file, png_buf.data(), png_buf.size());
       std::chrono::duration<double, std::milli> writing_duration = std::chrono::high_resolution_clock::now() - start;
 
       std::unique_lock lock{_times_mutex};
@@ -102,7 +101,7 @@ public:
     }
   }
 
-  std::thread start() {
+  std::thread start() override {
     for (int i = 0; i < _workers_no; i++) {
         std::thread(&FrameWriter::worker_thread, this).detach();
     }

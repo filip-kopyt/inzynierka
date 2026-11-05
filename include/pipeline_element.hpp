@@ -44,8 +44,6 @@ public:
     _cv.notify_all();
     return ret;
   };
-
-  bool has_item() { return _result.has_value(); }
 };
 
 template <> class Slot<void> {};
