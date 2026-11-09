@@ -3,6 +3,7 @@
 #include <MiniPID.h>
 #include <opencv2/core.hpp>
 #include <utility>
+#include <iostream>
 
 #include "config.h"
 #include "stereo_camera.h"
@@ -43,4 +44,9 @@ public:
   }
 
   int to_pidspace(int color) { return color * 800 / 256; }
+
+  virtual void stop() override {
+    std::cout << "Current exposure value = " << _exposure << "\n";
+    PipelineElement::stop();
+  }
 };

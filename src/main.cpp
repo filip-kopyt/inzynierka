@@ -14,7 +14,7 @@
 //#include <opencv2/cudawarping.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/stereo.hpp>
+//#include <opencv2/stereo.hpp>
 #include <signal.h>
 
 // void cuda_test() {
@@ -121,11 +121,14 @@ int main(int argc, char *argv[]) {
   }
 
   auto cams = StereoCamera();
+  // auto frame_sync = FrameSync(cams.output());
   // auto [rec1, rec2] =
   //    CameraRectify::setup_rectifiers(cam1.output(), cam2.output(), argv[1]);
 
   auto tee = Tee(cams.output());
+  //auto tee2 = Tee(tee.out1());
 
+  //auto viewer = VideoDisplay(tee2.out2());
   auto consumer = FrameWriter(argv[2], tee.out1());
   auto exposure_regulator =
       ExposureRegulator(tee.out2(), cams, 0.15, 0.05, 0.20);
@@ -133,7 +136,9 @@ int main(int argc, char *argv[]) {
   run({
       &cams,
       &tee,
+      //&tee2,
       &exposure_regulator,
+      //&viewer,
       &consumer,
   });
 }

@@ -16,6 +16,7 @@
 #include <string>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <thread>
 #include <tuple>
 
 #include "config.h"
@@ -96,7 +97,7 @@ static inline void enable_streaming(FileDescriptor fd) {
   }
 }
 
-static inline void dequeue_buffer(FileDescriptor fd) {
+static inline uint64_t dequeue_buffer(FileDescriptor fd) {
   v4l2_buffer buf;
   memset(&buf, 0, sizeof(buf));
   buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -105,6 +106,8 @@ static inline void dequeue_buffer(FileDescriptor fd) {
   if (ioctl(fd, VIDIOC_DQBUF, &buf) < 0) {
     THROW("VIDIOC_DQBUF");
   }
+  auto tv = buf.timestamp;
+  return (uint64_t)tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
 static inline void enqueue_buffer(FileDescriptor fd) {
@@ -128,8 +131,8 @@ init_camera(int camera_index) {
   auto buf_ptr = querry_buffer(fd);
   enqueue_buffer(fd);
   enable_streaming(fd);
-
   set_cam_ctrl(fd, CTRL_ID_TRIGGER_MODE, 1);
+  //set_cam_ctrl(fd, CTRL_ID_DISABLE_FRAME_TIMEOUT, 1);
   return {fd, buf_ptr};
 }
 
@@ -142,13 +145,9 @@ static inline gpiod::line setup_gpio(gpiod::chip &chip) {
   return line;
 }
 
-void StereoCamera::enable_pwm() {
-  _gpio_line.set_value(1);
-}
+void StereoCamera::enable_pwm() { _gpio_line.set_value(1); }
 
-void StereoCamera::disable_pwm() {
-  _gpio_line.set_value(0);
-}
+void StereoCamera::disable_pwm() { _gpio_line.set_value(0); }
 
 void StereoCamera::stop() {
   left.running = false;
@@ -161,7 +160,7 @@ void StereoCamera::stop() {
 
 void StereoCamera::CameraMeta::loop() {
   while (running) {
-    dequeue_buffer(fd);
+    auto timestamp = dequeue_buffer(fd);
     auto frame =
         cv::Mat(cv::Size(CAM_WIDTH, CAM_HEIGHT), CV_8UC1, buffer).clone();
     enqueue_buffer(fd);
@@ -175,13 +174,56 @@ void StereoCamera::update_exposure(int value) {
 }
 
 std::pair<cv::Mat, cv::Mat> StereoCamera::work() {
-  return {*left.sink.pull(), *right.sink.pull()};
+  auto frame_l = *left.sink.pull();
+  auto frame_r = *right.sink.pull();
+  return {frame_l, frame_r};
+}
+
+static inline void flush_buffer(int fd) {
+  int flags = fcntl(fd, F_GETFL);
+  fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+
+  int again_count = 0;
+  while (again_count < 10) {
+    struct v4l2_buffer buf;
+
+    memset(&buf, 0, sizeof(buf));
+    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buf.memory = V4L2_MEMORY_MMAP;
+
+    if (ioctl(fd, VIDIOC_DQBUF, &buf) < 0) {
+      if (errno == EAGAIN) {
+        again_count++;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        continue;
+      } else {
+        THROW("VIDIOC_DQBUF");
+      }
+    }
+
+    memset(&buf, 0, sizeof(buf));
+    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buf.memory = V4L2_MEMORY_MMAP;
+    buf.index = 0;
+
+    if (ioctl(fd, VIDIOC_QBUF, &buf) < 0) {
+      THROW("VIDIOC_QBUF");
+    }
+  }
+
+  flags = fcntl(fd, F_GETFL);
+  fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
 }
 
 StereoCamera::StereoCamera() : _gpio_line(setup_gpio(_gpio_chip)) {
   disable_pwm();
+
   std::tie(left.fd, left.buffer) = init_camera(0);
   std::tie(right.fd, right.buffer) = init_camera(1);
+
+  flush_buffer(left.fd);
+  flush_buffer(right.fd);
+
   enable_pwm();
 
   left.collection_thread = std::thread(&CameraMeta::loop, &left);

@@ -21,7 +21,6 @@ public:
     cv::Mat merged_frames, resized_frames;
     cv::hconcat(std::array{frame1, frame2}, merged_frames);
     cv::resize(merged_frames, resized_frames, cv::Size(), 0.5, 0.5);
-    // std::cout << "test\n";
     cv::imshow("frames", resized_frames);
     cv::waitKey(1);
   }
