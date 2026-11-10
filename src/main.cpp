@@ -38,8 +38,7 @@ int main(int argc, char *argv[]) {
   // return 0;
 
   if (argc != 2) {
-    std::cout << "usage: " << argv[0]
-              << " <frame_destination>\n";
+    std::cout << "usage: " << argv[0] << " <frame_destination>\n";
     return 1;
   }
 
