@@ -3,7 +3,7 @@ project(eng_thesis CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED HINTS "/home/noembedded/opencv-5/")
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 find_package(PkgConfig REQUIRED)

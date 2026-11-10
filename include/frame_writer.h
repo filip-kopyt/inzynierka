@@ -103,18 +103,13 @@ public:
       // std::milli> encoding_duration =
       // std::chrono::high_resolution_clock::now() - start;
 
-      auto file = open(file_name.c_str(), O_WRONLY | O_CREAT); // | O_SYNC
-      if (file < 0) {
-        std::perror("open");
-      }
+      auto file = std::ofstream(file_name, std::ios::binary);
 
       // auto start = std::chrono::high_resolution_clock::now();
-      if (write(file, merged_frames.data,
-                merged_frames.total() * merged_frames.elemSize()) < 0) {
-        std::perror("write");
-      }
+      file.write(reinterpret_cast<char*>(merged_frames.data),
+                merged_frames.total() * merged_frames.elemSize());
       // fsync(file);
-      close(file);
+      file.close();
       // std::chrono::duration<double, std::milli> writing_duration =
       //    std::chrono::high_resolution_clock::now() - start;
 

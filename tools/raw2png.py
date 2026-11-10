@@ -36,7 +36,8 @@ def main():
                 )
             )
     elif src.is_file():
-        dest = dest / src.name.replace(".raw", ".png") if dest.is_dir() else dest
+        dest = (dest / src.name.replace(".raw", ".png")) if dest.is_dir() else dest
+        #print(dest, dest.is_dir())
         raw2png((str(src), str(dest)))
     else:
         print("bad args")
