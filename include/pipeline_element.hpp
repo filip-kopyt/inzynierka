@@ -9,7 +9,7 @@
 #include <thread>
 #include <type_traits>
 
-template <typename T> class Slot {
+template <typename T> class SlotInner {
   static_assert(!std::is_void_v<T>);
 
 private:
@@ -46,7 +46,9 @@ public:
   };
 };
 
-template <> class Slot<void> {};
+template <> class SlotInner<void> {};
+
+template <typename T> using Slot = std::shared_ptr<SlotInner<T>>;
 
 class PipelineElementBase {
 private:
@@ -62,7 +64,7 @@ public:
 template <typename In, typename Out>
 class PipelineElement : public PipelineElementBase {
 private:
-  Slot<In> &_input;
+  Slot<In> _input;
   Slot<Out> _output;
 
 public:
@@ -75,12 +77,12 @@ public:
 
   void loop() {
     while (is_running()) {
-      std::optional<In> item = _input.pull();
+      std::optional<In> item = _input->pull();
       if (!item)
         continue;
 
       Out result = work(std::move(*item));
-      _output.push(std::move(result));
+      _output->push(std::move(result));
     }
   }
 
@@ -100,7 +102,7 @@ public:
   void loop() {
     while (is_running()) {
       Out result = work();
-      _output.push(std::move(result));
+      _output->push(std::move(result));
     }
   }
 
@@ -120,7 +122,7 @@ public:
 
   void loop() {
     while (is_running()) {
-      std::optional<In> item = _input.pull();
+      std::optional<In> item = _input->pull();
       if (!item)
         continue;
       work(std::move(*item));
@@ -139,11 +141,11 @@ public:
 
   void loop() {
     while (is_running()) {
-      std::optional<T> item = _in.pull();
+      std::optional<T> item = _in->pull();
       if (!item)
         continue;
-      _out1.push(*item);
-      _out2.push(*item);
+      _out1->push(*item);
+      _out2->push(*item);
     }
   }
 

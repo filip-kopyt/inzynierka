@@ -160,11 +160,11 @@ void StereoCamera::stop() {
 
 void StereoCamera::CameraMeta::loop() {
   while (running) {
-    auto timestamp = dequeue_buffer(fd);
+    dequeue_buffer(fd);
     auto frame =
         cv::Mat(cv::Size(CAM_WIDTH, CAM_HEIGHT), CV_8UC1, buffer).clone();
     enqueue_buffer(fd);
-    sink.push(frame);
+    sink->push(frame);
   }
 }
 
@@ -174,8 +174,8 @@ void StereoCamera::update_exposure(int value) {
 }
 
 std::pair<cv::Mat, cv::Mat> StereoCamera::work() {
-  auto frame_l = *left.sink.pull();
-  auto frame_r = *right.sink.pull();
+  auto frame_l = *left.sink->pull();
+  auto frame_r = *right.sink->pull();
   return {frame_l, frame_r};
 }
 
@@ -218,8 +218,8 @@ static inline void flush_buffer(int fd) {
 StereoCamera::StereoCamera() : _gpio_line(setup_gpio(_gpio_chip)) {
   disable_pwm();
 
-  std::tie(left.fd, left.buffer) = init_camera(0);
-  std::tie(right.fd, right.buffer) = init_camera(1);
+  std::tie(left.fd, left.buffer) = init_camera(1);
+  std::tie(right.fd, right.buffer) = init_camera(0);
 
   flush_buffer(left.fd);
   flush_buffer(right.fd);

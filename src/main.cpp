@@ -8,7 +8,7 @@
 
 static bool running = true;
 
-void signal_handler(int signal) {
+void signal_handler(int) {
   std::cout << "stopping\n";
   running = false;
 }

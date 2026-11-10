@@ -9,7 +9,8 @@
 
 CameraRectify::CameraRectify(Slot<std::pair<size_t, cv::Mat>> &input,
                              cv::Mat map1, cv::Mat map2)
-    : map1(map1), map2(map2), PipelineElement(input) {}
+    : PipelineElement(input), map1(map1), map2(map2) {}
+
 std::pair<size_t, cv::Mat>
 CameraRectify::work(std::pair<size_t, cv::Mat> &&input) {
   cv::Mat ret;
@@ -17,6 +18,7 @@ CameraRectify::work(std::pair<size_t, cv::Mat> &&input) {
   cv::remap(frame, ret, map1, map2, cv::INTER_NEAREST);
   return {timestamp, ret};
 }
+
 std::pair<std::unique_ptr<CameraRectify>, std::unique_ptr<CameraRectify>>
 CameraRectify::setup_rectifiers(Slot<std::pair<size_t, cv::Mat>> &cam1_input,
                                 Slot<std::pair<size_t, cv::Mat>> &cam2_input,

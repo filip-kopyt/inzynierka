@@ -1,4 +1,3 @@
-#if CV_VERSION_MAJOR == 5
 #include "cuda_algs.h"
 
 #include <opencv2/calib3d.hpp>
@@ -6,12 +5,14 @@
 #include <opencv2/core/cuda.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/core/utility.hpp>
+#include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudastereo.hpp>
+#include <opencv2/cudawarping.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/stereo.hpp>
 
 #include "config.h"
-
 
 void cuda_test() {
   cv::cuda::Stream stream;
@@ -31,8 +32,6 @@ void cuda_test() {
   file["D2"] >> D2;
   file["R"] >> R;
   file["T"] >> T;
-
-  int stereo_flags;
 
   cv::stereoRectify(K1, D1, K2, D2, cv::Size(CAM_WIDTH, CAM_HEIGHT), R, T, R1,
                     R2, P1, P2, Q, cv::STEREO_ZERO_DISPARITY, 0);
@@ -79,11 +78,3 @@ void cuda_test() {
   disp_normalized.download(disp_cpu);
   cv::imwrite("test_disp.png", disp_cpu);
 }
-
-#else
-
-#include <stdexcept>
-
-void cuda_test() { throw std::runtime_error("not available"); }
-
-#endif

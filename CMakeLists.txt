@@ -14,7 +14,17 @@ add_library(MiniPID MiniPID/MiniPID.cpp)
 set_property(TARGET MiniPID PROPERTY CXX_STANDARD 20)
 target_include_directories(MiniPID PUBLIC MiniPID)
 
-add_executable(cam_reader src/main.cpp src/stereo_camera.cpp)
+add_executable(cam_reader 
+    src/main.cpp 
+    src/stereo_camera.cpp
+    src/camera_rectify.cpp
+    src/cuda_algs.cpp
+    src/video_display.cpp
+    src/exposure_regulator.cpp
+    src/disparity_calculation.cpp
+    src/frame_writer.cpp
+)
 set_property(TARGET cam_reader PROPERTY CXX_STANDARD 20)
 target_include_directories(cam_reader PUBLIC include)
 target_link_libraries(cam_reader ${OpenCV_LIBS} MiniPID PkgConfig::GPIODXX)
+target_compile_options(cam_reader PRIVATE -Wall -Wextra -Wpedantic -Werror)
