@@ -65,7 +65,7 @@ template <typename In, typename Out>
 class PipelineElement : public PipelineElementBase {
 private:
   Slot<In> _input;
-  Slot<Out> _output;
+  Slot<Out> _output = std::make_shared<SlotInner<Out>>();
 
 public:
   PipelineElement(Slot<In> &input) : _input(input) {}
@@ -86,13 +86,15 @@ public:
     }
   }
 
-  virtual std::thread start() override { return std::thread(&PipelineElement::loop, this); }
+  virtual std::thread start() override {
+    return std::thread(&PipelineElement::loop, this);
+  }
 };
 
 template <typename Out>
 class PipelineElement<void, Out> : public PipelineElementBase {
 private:
-  Slot<Out> _output;
+  Slot<Out> _output = std::make_shared<SlotInner<Out>>();
 
 public:
   virtual Out work() = 0;
@@ -106,12 +108,15 @@ public:
     }
   }
 
-  virtual std::thread start() override { return std::thread(&PipelineElement::loop, this); }
+  virtual std::thread start() override {
+    return std::thread(&PipelineElement::loop, this);
+  }
 };
 
-template <typename In> class PipelineElement<In, void> : public PipelineElementBase {
+template <typename In>
+class PipelineElement<In, void> : public PipelineElementBase {
 private:
-  Slot<In> &_input;
+  Slot<In> _input;
 
 public:
   PipelineElement(Slot<In> &input) : _input(input) {}
@@ -129,13 +134,17 @@ public:
     }
   }
 
-  virtual std::thread start() override { return std::thread(&PipelineElement::loop, this); }
+  virtual std::thread start() override {
+    return std::thread(&PipelineElement::loop, this);
+  }
 };
 
 template <typename T> class Tee : public PipelineElementBase {
 private:
-  Slot<T> &_in;
-  Slot<T> _out1, _out2;
+  Slot<T> _in;
+  Slot<T> _out1 = std::make_shared<SlotInner<T>>(),
+          _out2 = std::make_shared<SlotInner<T>>();
+
 public:
   Tee(Slot<T> &in) : _in(in) {}
 

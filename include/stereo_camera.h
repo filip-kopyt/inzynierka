@@ -14,7 +14,7 @@ class StereoCamera : public PipelineElement<void, std::pair<cv::Mat, cv::Mat>> {
 private:
   struct CameraMeta {
     std::thread collection_thread;
-    Slot<cv::Mat> sink;
+    Slot<cv::Mat> sink = std::make_shared<SlotInner<cv::Mat>>();
     BufferPtr buffer;
     FileDescriptor fd;
     bool running = true;

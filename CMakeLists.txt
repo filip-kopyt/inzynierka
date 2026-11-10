@@ -27,4 +27,4 @@ add_executable(cam_reader
 set_property(TARGET cam_reader PROPERTY CXX_STANDARD 20)
 target_include_directories(cam_reader PUBLIC include)
 target_link_libraries(cam_reader ${OpenCV_LIBS} MiniPID PkgConfig::GPIODXX)
-target_compile_options(cam_reader PRIVATE -Wall -Wextra -Wpedantic -Werror)
+target_compile_options(cam_reader PRIVATE -Wall -Wextra -Wpedantic -Werror -g)
