@@ -8,7 +8,7 @@ FrameWriter::FrameWriter(std::filesystem::path save_loc,
   auto tm = *std::localtime(&t);
   ss << std::put_time(&tm, "%y-%m-%d-%H-%M-%S");
 
-  _save_loc = save_loc / ss.str();
+  _save_loc = save_loc;
   std::filesystem::create_directories(_save_loc);
 }
 
@@ -56,6 +56,10 @@ void FrameWriter::worker_thread() {
     file.write(reinterpret_cast<char *>(merged_frames.data),
                merged_frames.total() * merged_frames.elemSize());
     file.close();
+
+    // if (_counter >= 50) {
+    //   exit(0);
+    // }
   }
 }
 

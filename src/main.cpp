@@ -5,6 +5,7 @@
 #include "frame_writer.h"
 #include "stereo_camera.h"
 #include "video_display.h"
+#include "cuda_algs.h"
 
 static bool running = true;
 
@@ -16,6 +17,8 @@ void signal_handler(int) {
 void run(std::vector<PipelineElementBase *> parts) {
   std::vector<std::thread> threads;
   signal(SIGINT, &signal_handler);
+
+  std::cout << "Starting\n";
 
   for (const auto &part : parts) {
     threads.push_back(part->start());
@@ -41,7 +44,6 @@ int main(int argc, char *argv[]) {
     std::cout << "usage: " << argv[0] << " <frame_destination>\n";
     return 1;
   }
-
   auto cams = StereoCamera();
 
   auto tee = Tee(cams.output());

@@ -46,14 +46,14 @@ void cuda_test() {
   map2x_g.upload(map2x, stream);
   map2y_g.upload(map2y, stream);
 
-  merged_frames = cv::imread("converted/frame50.png", cv::IMREAD_GRAYSCALE);
-  auto right = merged_frames.colRange(0, 1600);
-  auto left = merged_frames.colRange(1600, 3200);
+  merged_frames = cv::imread("SSD/converted/frame140.png", cv::IMREAD_GRAYSCALE);
+  auto left = merged_frames.colRange(0, 1600);
+  auto right = merged_frames.colRange(1600, 3200);
 
   frameL.upload(left);
   frameR.upload(right);
 
-  auto matcher = cv::cuda::createStereoConstantSpaceBP(256, 16, 4);
+  auto matcher = cv::cuda::createStereoSGM(0, 256);
   auto filter = cv::cuda::createDisparityBilateralFilter(256, 3, 1);
 
   stream.waitForCompletion();
