@@ -3,7 +3,7 @@ project(eng_thesis CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(OpenCV REQUIRED HINTS "/home/noembedded/opencv-5/")
+find_package(OpenCV 5.0.0 REQUIRED HINTS "/home/noembedded/opencv-5/")
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 find_package(PkgConfig REQUIRED)
@@ -23,6 +23,7 @@ add_executable(cam_reader
     src/exposure_regulator.cpp
     src/disparity_calculation.cpp
     src/frame_writer.cpp
+    src/file_stream.cpp
 )
 set_property(TARGET cam_reader PROPERTY CXX_STANDARD 20)
 target_include_directories(cam_reader PUBLIC include)

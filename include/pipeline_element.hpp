@@ -68,6 +68,9 @@ private:
   Slot<Out> _output = std::make_shared<SlotInner<Out>>();
 
 public:
+  using Output = Out;
+  using Input = In;
+
   PipelineElement(Slot<In> &input) : _input(input) {}
 
   virtual Out work(In &&) = 0;
@@ -97,6 +100,8 @@ private:
   Slot<Out> _output = std::make_shared<SlotInner<Out>>();
 
 public:
+  using Output = Out;
+
   virtual Out work() = 0;
 
   Slot<Out> &output() { return _output; }
@@ -119,6 +124,8 @@ private:
   Slot<In> _input;
 
 public:
+  using Input = In;
+
   PipelineElement(Slot<In> &input) : _input(input) {}
 
   virtual void work(In &&) = 0;

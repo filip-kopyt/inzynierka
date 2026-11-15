@@ -7,9 +7,9 @@
 
 #include "pipeline_element.hpp"
 
-class VideoDisplay : public PipelineElement<std::pair<cv::Mat, cv::Mat>, void> {
+class VideoDisplay : public PipelineElement<cv::Mat, void> {
 public:
   VideoDisplay(auto &in) : PipelineElement(in) {}
 
-  void work(std::pair<cv::Mat, cv::Mat> &&input);
+  virtual void work(cv::Mat &&input) override;
 };

@@ -17,6 +17,8 @@
 #define CAM_HEIGHT 1300
 #define CAM_BUF_SIZE (CAM_WIDTH * CAM_HEIGHT)
 
+#define ENABLE_PWM_CONTROL 0
+
 // Stop criteria
 // #define MAX_FRAMES 240
 

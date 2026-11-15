@@ -24,11 +24,13 @@ private:
 
   CameraMeta left, right;
 
+#if ENABLE_PWM_CONTROL
   gpiod::chip _gpio_chip{"/dev/gpiochip0"};
   gpiod::line _gpio_line;
 
   void disable_pwm();
   void enable_pwm();
+#endif
 
 public:
   StereoCamera();

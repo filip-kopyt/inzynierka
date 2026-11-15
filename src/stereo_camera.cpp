@@ -132,10 +132,11 @@ init_camera(int camera_index) {
   enqueue_buffer(fd);
   enable_streaming(fd);
   set_cam_ctrl(fd, CTRL_ID_TRIGGER_MODE, 1);
-  //set_cam_ctrl(fd, CTRL_ID_DISABLE_FRAME_TIMEOUT, 1);
+  // set_cam_ctrl(fd, CTRL_ID_DISABLE_FRAME_TIMEOUT, 1);
   return {fd, buf_ptr};
 }
 
+#if ENABLE_PWM_CONTROL
 static inline gpiod::line setup_gpio(gpiod::chip &chip) {
   auto line = chip.get_line(GPIO_PWM_LINE_OFFSET);
   gpiod::line_request config;
@@ -148,6 +149,7 @@ static inline gpiod::line setup_gpio(gpiod::chip &chip) {
 void StereoCamera::enable_pwm() { _gpio_line.set_value(1); }
 
 void StereoCamera::disable_pwm() { _gpio_line.set_value(0); }
+#endif
 
 void StereoCamera::stop() {
   left.running = false;
@@ -215,8 +217,14 @@ static inline void flush_buffer(int fd) {
   fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
 }
 
-StereoCamera::StereoCamera() : _gpio_line(setup_gpio(_gpio_chip)) {
+StereoCamera::StereoCamera()
+#if ENABLE_PWM_CONTROL
+    : _gpio_line(setup_gpio(_gpio_chip))
+#endif
+{
+#if ENABLE_PWM_CONTROL
   disable_pwm();
+#endif
 
   std::tie(left.fd, left.buffer) = init_camera(1);
   std::tie(right.fd, right.buffer) = init_camera(0);
@@ -224,7 +232,9 @@ StereoCamera::StereoCamera() : _gpio_line(setup_gpio(_gpio_chip)) {
   flush_buffer(left.fd);
   flush_buffer(right.fd);
 
+#if ENABLE_PWM_CONTROL
   enable_pwm();
+#endif
 
   left.collection_thread = std::thread(&CameraMeta::loop, &left);
   right.collection_thread = std::thread(&CameraMeta::loop, &right);

@@ -1,25 +1,25 @@
 #pragma once
 
+#include <filesystem>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/persistence.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/stereo.hpp>
 #include <utility>
 
+#include "config.h"
 #include "pipeline_element.hpp"
 
-class CameraRectify : public PipelineElement<std::pair<size_t, cv::Mat>,
-                                             std::pair<size_t, cv::Mat>> {
+class CameraRectify : public PipelineElement<std::pair<cv::Mat, cv::Mat>,
+                                             std::pair<cv::Mat, cv::Mat>> {
 private:
-  cv::Mat map1, map2;
+  cv::Mat map_x_left, map_y_left;
+  cv::Mat map_x_right, map_y_right;
 
 public:
-  CameraRectify(Slot<std::pair<size_t, cv::Mat>> &input, cv::Mat map1,
-                cv::Mat map2);
+  CameraRectify(Slot<PipelineElement::Input> &input,
+                std::filesystem::path calibration_file);
 
-  virtual std::pair<size_t, cv::Mat>
-  work(std::pair<size_t, cv::Mat> &&input) override;
-
-  static std::pair<std::unique_ptr<CameraRectify>,
-                   std::unique_ptr<CameraRectify>>
-  setup_rectifiers(Slot<std::pair<size_t, cv::Mat>> &cam1_input,
-                   Slot<std::pair<size_t, cv::Mat>> &cam2_input,
-                   std::string path_to_params);
+  virtual PipelineElement::Output
+  work(PipelineElement::Input &&frames) override;
 };
