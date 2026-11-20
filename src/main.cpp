@@ -1,3 +1,4 @@
+#include <opencv2/cudastereo.hpp>
 #include <opencv2/stereo.hpp>
 #include <signal.h>
 
@@ -38,6 +39,12 @@ void run(std::vector<PipelineElementBase *> parts) {
     thread.join();
   }
 }
+
+// int main() {
+//   int ndisp, iters, levels, nr_plane;
+//   cv::cuda::StereoConstantSpaceBP::estimateRecommendedParams(1600, 1300, ndisp, iters, levels, nr_plane);
+//   std::cout << ndisp << " " << iters << " " << levels << " " << nr_plane << "\n";
+// }
 
 int main() {
   auto matcher = cv::StereoSGBM::create(0, 128, 1, 10, 40, 2, 16, 15, 50, 1);
