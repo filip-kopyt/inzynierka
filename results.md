@@ -1,0 +1,46 @@
+#### Scale x1
+##### Mean coverage
+ - SGM HH4
+   - acc = 85.8799%
+   - trials = 500
+   - time = 46m 14.5s
+   - params = {'p1': 16, 'p2': 60, 'uniqness_ratio': 0, 'filter_radius': 2, 'filter_niter': 1}
+ - SGM HH
+   - acc = 85.2642%
+   - trials = 500
+   - time = 60m 5.4s
+   - params = {'p1': 16, 'p2': 51, 'uniqness_ratio': 2, 'filter_radius': 1, 'filter_niter': 4}
+ - BM
+   - acc = 94.9575%
+   - trials = 250
+   - time = 20m 36.4s
+   - params = {'block_size': 19, 'filter_radius': 7, 'filter_niter': 2}
+   - notes:
+     - Most block sizes have similar results, can be reduced if slow
+ - BP
+   - acc = 86.7795%
+   - trials = 250
+   - time = 58m 15.7s
+   - params = {'iters': 3, 'levels': 5, 'nr_plane': 7, 'filter_radius': 2, 'filter_niter': 1}
+##### STDs of diffs
+ - SGM HH4
+   - std = 35.4676px
+   - trials = 500
+   - time = 53m 40.9s
+   - params = {'p1': 0, 'p2': 0, 'uniqness_ratio': 25, 'filter_radius': 7, 'filter_niter': 7}
+   - notes:
+    - ultra degenerated
+ - SGM HH
+   - std = 45.4061px
+   - trials = 500
+   - time = 67m 15.3s
+   - params = {'p1': 14, 'p2': 196, 'uniqness_ratio': 25, 'filter_radius': 7, 'filter_niter': 7}
+   - notes:
+    - ultra degenerated
+ - BM
+   - std = 117.8499px
+   - trials = 500
+   - time = 21m 26.4s
+   - params = {'block_size': 13, 'filter_radius': 1, 'filter_niter': 1}
+   - notes:
+    - close to "mean coverage" version
