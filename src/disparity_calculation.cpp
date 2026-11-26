@@ -4,8 +4,8 @@
 
 DisparityCalculation::DisparityCalculation(
     cv::Ptr<cv::StereoMatcher> matcher,
-    Slot<std::pair<cv::Mat, cv::Mat>> &input)
-    : PipelineElement(input), _left_matcher(matcher) {
+    Slot<std::pair<cv::Mat, cv::Mat>> input)
+    : PipelineElement(std::move(input)), _left_matcher(matcher) {
   _right_matcher = cv::ximgproc::createRightMatcher(_left_matcher);
 }
 

@@ -1,3 +1,6 @@
+#include <iomanip>
+#include <ios>
+#include <iostream>
 #include <opencv2/cudastereo.hpp>
 #include <opencv2/stereo.hpp>
 #include <signal.h>
@@ -8,6 +11,7 @@
 #include "exposure_regulator.h"
 #include "file_stream.h"
 #include "frame_writer.h"
+#include "performance_tests.h"
 #include "stereo_camera.h"
 #include "video_display.h"
 
@@ -42,9 +46,13 @@ void run(std::vector<PipelineElementBase *> parts) {
 
 // int main() {
 //   int ndisp, iters, levels, nr_plane;
-//   cv::cuda::StereoConstantSpaceBP::estimateRecommendedParams(1600, 1300, ndisp, iters, levels, nr_plane);
-//   std::cout << ndisp << " " << iters << " " << levels << " " << nr_plane << "\n";
+//   cv::cuda::StereoConstantSpaceBP::estimateRecommendedParams(1600, 1300,
+//   ndisp, iters, levels, nr_plane); std::cout << ndisp << " " << iters << " "
+//   << levels << " " << nr_plane << "\n";
 // }
+
+#define PERF_TEST
+#ifndef PERF_TEST
 
 int main() {
   auto matcher = cv::StereoSGBM::create(0, 128, 1, 10, 40, 2, 16, 15, 50, 1);
@@ -56,3 +64,63 @@ int main() {
 
   run({&file_stream, &rectify, &disparity, &display});
 }
+
+#else
+
+int main() {
+  std::cout << std::fixed << std::setprecision(2);
+  {
+    auto matcher = cv::cuda::createStereoSGM(0, 128, 10, 120, 5,
+                                             cv::cuda::StereoSGM::MODE_HH4);
+    auto filter = cv::cuda::createDisparityBilateralFilter();
+    auto [average, std] = test_matcher(matcher, filter);
+    std::cout << "SGM_HH4+filter  avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+  }
+  {
+    auto matcher = cv::cuda::createStereoSGM(0, 128, 10, 120, 5,
+                                             cv::cuda::StereoSGM::MODE_HH4);
+    // auto filter = cv::cuda::createDisparityBilateralFilter();
+    auto [average, std] = test_matcher(matcher);
+    std::cout << "SGM_HH4         avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+  }
+  {
+    auto matcher = cv::cuda::createStereoSGM(0, 128, 10, 120, 5,
+                                             cv::cuda::StereoSGM::MODE_HH);
+    auto filter = cv::cuda::createDisparityBilateralFilter();
+    auto [average, std] = test_matcher(matcher, filter);
+    std::cout << "SGM_HH+filter   avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+  }
+  {
+    auto matcher = cv::cuda::createStereoSGM(0, 128, 10, 120, 5,
+                                             cv::cuda::StereoSGM::MODE_HH);
+    // auto filter = cv::cuda::createDisparityBilateralFilter();
+    auto [average, std] = test_matcher(matcher);
+    std::cout << "SGM_HH          avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+  }
+  {
+    auto matcher = cv::cuda::createStereoBM();
+    auto filter = cv::cuda::createDisparityBilateralFilter();
+    auto [average, std] = test_matcher(matcher, filter);
+    std::cout << "BM+filter       avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+  }
+  {
+    auto matcher = cv::cuda::createStereoBM();
+    // auto filter = cv::cuda::createDisparityBilateralFilter();
+    auto [average, std] = test_matcher(matcher);
+    std::cout << "BM              avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+  }
+  {
+    auto matcher = cv::cuda::createStereoConstantSpaceBP();
+    auto filter = cv::cuda::createDisparityBilateralFilter();
+    auto [average, std] = test_matcher(matcher, filter);
+    std::cout << "BP+filter       avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+  }
+  {
+    auto matcher = cv::cuda::createStereoConstantSpaceBP();
+    // auto filter = cv::cuda::createDisparityBilateralFilter();
+    auto [average, std] = test_matcher(matcher);
+    std::cout << "BP              avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+  }
+}
+
+#endif

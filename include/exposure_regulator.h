@@ -15,7 +15,7 @@ private:
   double _exposure = 400;
 
 public:
-  ExposureRegulator(Slot<std::pair<cv::Mat, cv::Mat>> &input,
+  ExposureRegulator(Slot<std::pair<cv::Mat, cv::Mat>> input,
                     StereoCamera &cams, double p, double i, double d);
 
   virtual void work(std::pair<cv::Mat, cv::Mat> &&frames) override;

@@ -9,7 +9,7 @@
 
 class VideoDisplay : public PipelineElement<cv::Mat, void> {
 public:
-  VideoDisplay(auto &in) : PipelineElement(in) {}
+  VideoDisplay(Slot<cv::Mat> in) : PipelineElement(std::move(in)) {}
 
   virtual void work(cv::Mat &&input) override;
 };

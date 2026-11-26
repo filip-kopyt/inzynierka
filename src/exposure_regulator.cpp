@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-ExposureRegulator::ExposureRegulator(Slot<std::pair<cv::Mat, cv::Mat>> &input,
+ExposureRegulator::ExposureRegulator(Slot<std::pair<cv::Mat, cv::Mat>> input,
                                      StereoCamera &cams, double p, double i,
                                      double d)
-    : PipelineElement(input), _pid(p, i, d), _cams(cams) {
+    : PipelineElement(std::move(input)), _pid(p, i, d), _cams(cams) {
   _pid.setOutputLimits(-25, 25);
   _pid.setSetpointRange(50);
   _pid.setOutputFilter(0.1);

@@ -65,18 +65,20 @@ template <typename In, typename Out>
 class PipelineElement : public PipelineElementBase {
 private:
   Slot<In> _input;
-  Slot<Out> _output = std::make_shared<SlotInner<Out>>();
+  Slot<Out> _output;
 
 public:
   using Output = Out;
   using Input = In;
 
-  PipelineElement(Slot<In> &input) : _input(input) {}
+  PipelineElement(Slot<In> input,
+                  Slot<Out> output = std::make_shared<SlotInner<Out>>())
+      : _input(std::move(input)), _output(std::move(output)) {}
 
   virtual Out work(In &&) = 0;
 
-  Slot<Out> &output() { return _output; }
-  Slot<In> &input() { return _input; }
+  Slot<Out> output() const { return _output; }
+  Slot<In> input() const { return _input; }
 
   void loop() {
     while (is_running()) {
@@ -97,14 +99,17 @@ public:
 template <typename Out>
 class PipelineElement<void, Out> : public PipelineElementBase {
 private:
-  Slot<Out> _output = std::make_shared<SlotInner<Out>>();
+  Slot<Out> _output;
 
 public:
   using Output = Out;
 
+  PipelineElement(Slot<Out> output = std::make_shared<SlotInner<Out>>())
+      : _output(std::move(output)) {}
+
   virtual Out work() = 0;
 
-  Slot<Out> &output() { return _output; }
+  Slot<Out> output() const { return _output; }
 
   void loop() {
     while (is_running()) {
@@ -126,11 +131,11 @@ private:
 public:
   using Input = In;
 
-  PipelineElement(Slot<In> &input) : _input(input) {}
+  PipelineElement(Slot<In> input) : _input(std::move(input)) {}
 
   virtual void work(In &&) = 0;
 
-  Slot<In> &input() { return _input; }
+  Slot<In> input() const { return _input; }
 
   void loop() {
     while (is_running()) {
@@ -149,11 +154,13 @@ public:
 template <typename T> class Tee : public PipelineElementBase {
 private:
   Slot<T> _in;
-  Slot<T> _out1 = std::make_shared<SlotInner<T>>(),
-          _out2 = std::make_shared<SlotInner<T>>();
+  Slot<T> _out1, _out2;
 
 public:
-  Tee(Slot<T> &in) : _in(in) {}
+  Tee(Slot<T> in,
+      Slot<T> out1 = std::make_shared<SlotInner<T>>(),
+      Slot<T> out2 = std::make_shared<SlotInner<T>>())
+      : _in(std::move(in)), _out1(std::move(out1)), _out2(std::move(out2)) {}
 
   void loop() {
     while (is_running()) {
@@ -165,8 +172,9 @@ public:
     }
   }
 
-  Slot<T> &out1() { return _out1; }
-  Slot<T> &out2() { return _out2; }
+  Slot<T> out1() const { return _out1; }
+  Slot<T> out2() const { return _out2; }
+  Slot<T> in() const { return _in; }
 
   virtual std::thread start() override { return std::thread(&Tee::loop, this); }
 };
