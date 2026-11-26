@@ -17,7 +17,7 @@ private:
   cv::Mat map_x_right, map_y_right;
 
 public:
-  CameraRectify(Slot<PipelineElement::Input> &input,
+  CameraRectify(Slot<PipelineElement::Input> input,
                 std::filesystem::path calibration_file);
 
   virtual PipelineElement::Output

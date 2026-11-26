@@ -1,8 +1,8 @@
 #include "frame_writer.h"
 
 FrameWriter::FrameWriter(std::filesystem::path save_loc,
-                         Slot<std::pair<cv::Mat, cv::Mat>> &input)
-    : PipelineElement(input) {
+                         Slot<std::pair<cv::Mat, cv::Mat>> input)
+    : PipelineElement(std::move(input)) {
   std::stringstream ss;
   auto t = std::time(nullptr);
   auto tm = *std::localtime(&t);

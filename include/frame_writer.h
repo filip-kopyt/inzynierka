@@ -44,7 +44,7 @@ private:
   // std::vector<double> _writing_times_msec;
 
 public:
-  FrameWriter(std::filesystem::path save_loc, Slot<std::pair<cv::Mat, cv::Mat>> &input);
+  FrameWriter(std::filesystem::path save_loc, Slot<std::pair<cv::Mat, cv::Mat>> input);
 
   virtual void work(std::pair<cv::Mat, cv::Mat> &&in) override;
 

@@ -8,9 +8,9 @@ CameraRectify::Output CameraRectify::work(CameraRectify::Input &&frames) {
   return {left_out, right_out};
 }
 
-CameraRectify::CameraRectify(Slot<PipelineElement::Input> &input,
+CameraRectify::CameraRectify(Slot<PipelineElement::Input> input,
                              std::filesystem::path calibration_file)
-    : PipelineElement(input) {
+    : PipelineElement(std::move(input)) {
   cv::FileStorage file(calibration_file, cv::FileStorage::READ);
   cv::Mat K1, K2, D1, D2, R, T;
   cv::Mat P1, P2, R1, R2, Q;

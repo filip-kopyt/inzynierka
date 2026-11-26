@@ -18,7 +18,7 @@ public:
   bool use_wls_filter = false;
 
   DisparityCalculation(cv::Ptr<cv::StereoMatcher> matcher,
-                       Slot<std::pair<cv::Mat, cv::Mat>> &input);
+                       Slot<std::pair<cv::Mat, cv::Mat>> input);
 
   virtual cv::Mat work(std::pair<cv::Mat, cv::Mat> &&input) override;
 };

@@ -24,6 +24,7 @@ add_executable(cam_reader
     src/disparity_calculation.cpp
     src/frame_writer.cpp
     src/file_stream.cpp
+    src/performance_tests.cpp
 )
 set_property(TARGET cam_reader PROPERTY CXX_STANDARD 20)
 target_include_directories(cam_reader PUBLIC include)
