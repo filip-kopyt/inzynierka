@@ -51,13 +51,13 @@ void run(std::vector<PipelineElementBase *> parts) {
 //   << levels << " " << nr_plane << "\n";
 // }
 
-#define PERF_TEST
+//#define PERF_TEST
 #ifndef PERF_TEST
 
 int main() {
   auto matcher = cv::StereoSGBM::create(0, 128, 1, 10, 40, 2, 16, 15, 50, 1);
 
-  auto file_stream = FileStream("/home/filip-kopyt/jetson-data/frames6");
+  auto file_stream = FileStream("/home/filip-kopyt/jetson-data/frames0");
   auto rectify = CameraRectify(file_stream.output(), "calibration.ext");
   auto disparity = DisparityCalculation(matcher, rectify.output());
   auto display = VideoDisplay(disparity.output());
@@ -68,58 +68,68 @@ int main() {
 #else
 
 int main() {
+  auto dataset = load_dataset();
+
   std::cout << std::fixed << std::setprecision(2);
   {
     auto matcher = cv::cuda::createStereoSGM(0, 128, 10, 120, 5,
                                              cv::cuda::StereoSGM::MODE_HH4);
     auto filter = cv::cuda::createDisparityBilateralFilter();
-    auto [average, std] = test_matcher(matcher, filter);
-    std::cout << "SGM_HH4+filter  avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+    auto [average, std] = test_matcher(matcher, filter, dataset);
+    std::cout << "SGM_HH4+filter  avg=" << std::setw(6) << average
+              << "ms std=" << std::setw(6) << std << "ms\n";
   }
   {
     auto matcher = cv::cuda::createStereoSGM(0, 128, 10, 120, 5,
                                              cv::cuda::StereoSGM::MODE_HH4);
     // auto filter = cv::cuda::createDisparityBilateralFilter();
-    auto [average, std] = test_matcher(matcher);
-    std::cout << "SGM_HH4         avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+    auto [average, std] = test_matcher(matcher, dataset);
+    std::cout << "SGM_HH4         avg=" << std::setw(6) << average
+              << "ms std=" << std::setw(6) << std << "ms\n";
   }
   {
     auto matcher = cv::cuda::createStereoSGM(0, 128, 10, 120, 5,
                                              cv::cuda::StereoSGM::MODE_HH);
     auto filter = cv::cuda::createDisparityBilateralFilter();
-    auto [average, std] = test_matcher(matcher, filter);
-    std::cout << "SGM_HH+filter   avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+    auto [average, std] = test_matcher(matcher, filter, dataset);
+    std::cout << "SGM_HH+filter   avg=" << std::setw(6) << average
+              << "ms std=" << std::setw(6) << std << "ms\n";
   }
   {
     auto matcher = cv::cuda::createStereoSGM(0, 128, 10, 120, 5,
                                              cv::cuda::StereoSGM::MODE_HH);
     // auto filter = cv::cuda::createDisparityBilateralFilter();
-    auto [average, std] = test_matcher(matcher);
-    std::cout << "SGM_HH          avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+    auto [average, std] = test_matcher(matcher, dataset);
+    std::cout << "SGM_HH          avg=" << std::setw(6) << average
+              << "ms std=" << std::setw(6) << std << "ms\n";
   }
   {
     auto matcher = cv::cuda::createStereoBM();
     auto filter = cv::cuda::createDisparityBilateralFilter();
-    auto [average, std] = test_matcher(matcher, filter);
-    std::cout << "BM+filter       avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+    auto [average, std] = test_matcher(matcher, filter, dataset);
+    std::cout << "BM+filter       avg=" << std::setw(6) << average
+              << "ms std=" << std::setw(6) << std << "ms\n";
   }
   {
     auto matcher = cv::cuda::createStereoBM();
     // auto filter = cv::cuda::createDisparityBilateralFilter();
-    auto [average, std] = test_matcher(matcher);
-    std::cout << "BM              avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+    auto [average, std] = test_matcher(matcher, dataset);
+    std::cout << "BM              avg=" << std::setw(6) << average
+              << "ms std=" << std::setw(6) << std << "ms\n";
   }
   {
     auto matcher = cv::cuda::createStereoConstantSpaceBP();
     auto filter = cv::cuda::createDisparityBilateralFilter();
-    auto [average, std] = test_matcher(matcher, filter);
-    std::cout << "BP+filter       avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+    auto [average, std] = test_matcher(matcher, filter, dataset);
+    std::cout << "BP+filter       avg=" << std::setw(6) << average
+              << "ms std=" << std::setw(6) << std << "ms\n";
   }
   {
     auto matcher = cv::cuda::createStereoConstantSpaceBP();
     // auto filter = cv::cuda::createDisparityBilateralFilter();
-    auto [average, std] = test_matcher(matcher);
-    std::cout << "BP              avg=" << std::setw(6) << average << "ms std=" << std::setw(6) << std << "ms\n";
+    auto [average, std] = test_matcher(matcher, dataset);
+    std::cout << "BP              avg=" << std::setw(6) << average
+              << "ms std=" << std::setw(6) << std << "ms\n";
   }
 }
 

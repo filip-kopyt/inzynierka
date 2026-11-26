@@ -62,7 +62,7 @@ static inline Remaps load_remaps() {
       .map_lx = map1x, .map_ly = map1y, .map_rx = map2x, .map_ry = map2y};
 }
 
-static inline std::vector<std::pair<cv::Mat, cv::Mat>> load_dataset() {
+std::vector<std::pair<cv::Mat, cv::Mat>> load_dataset() {
   std::vector<std::pair<cv::Mat, cv::Mat>> ret;
   const auto remaps = load_remaps();
   std::cout << "dataset loading\n";
@@ -92,5 +92,3 @@ static inline std::vector<std::pair<cv::Mat, cv::Mat>> load_dataset() {
   std::cout << "dataset loaded\n";
   return ret;
 }
-
-const std::vector<std::pair<cv::Mat, cv::Mat>> DATASET = load_dataset();
