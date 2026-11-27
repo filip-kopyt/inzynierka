@@ -51,7 +51,7 @@ void run(std::vector<PipelineElementBase *> parts) {
 //   << levels << " " << nr_plane << "\n";
 // }
 
-//#define PERF_TEST
+#define PERF_TEST
 #ifndef PERF_TEST
 
 int main() {

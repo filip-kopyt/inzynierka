@@ -30,9 +30,9 @@ struct Remaps {
   cv::Mat map_rx, map_ry;
 };
 
-const std::filesystem::path DATA_FOLDER = "/home/filip-kopyt/jetson-data";
+const std::filesystem::path DATA_FOLDER = "/home/noembedded/tests/multithreaded_cameras_reading/SSD";
 
-const size_t RUNS = 25;
+const size_t RUNS = 10;
 const std::array DATA_SERIES = {
     DataRange{.series_id = 0, .start_frame_id = 50, .end_frame_id = 100},
 };
@@ -80,13 +80,16 @@ std::vector<std::pair<cv::Mat, cv::Mat>> load_dataset() {
       auto left = frames_merged.colRange(0, CAM_WIDTH);
       auto right = frames_merged.colRange(CAM_WIDTH, 2 * CAM_WIDTH);
 
-      cv::Mat left_remapped, right_remapped;
+      cv::Mat left_remapped, right_remapped, left_scaled, right_scaled;
       cv::remap(left, left_remapped, remaps.map_lx, remaps.map_ly,
                 cv::INTER_LINEAR);
       cv::remap(right, right_remapped, remaps.map_rx, remaps.map_ry,
                 cv::INTER_LINEAR);
 
-      ret.push_back({left_remapped, right_remapped});
+      cv::resize(left_remapped, left_scaled, cv::Size(), 0.25, 0.25, cv::INTER_AREA);
+      cv::resize(right_remapped, right_scaled, cv::Size(), 0.25, 0.25, cv::INTER_AREA);
+
+      ret.push_back({left_scaled, right_scaled});
     }
   }
   std::cout << "dataset loaded\n";
